@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="960" height="855" viewBox="0 0 960 855" xmlns="http://www.w3.org/2000/svg" font-family="'Inter', system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="a-blue"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#60a5fa"/></marker>
+    <marker id="a-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4ade80"/></marker>
+    <marker id="a-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#c084fc"/></marker>
+    <marker id="a-amber"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+    <marker id="a-cyan"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+    <marker id="a-indigo" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#818cf8"/></marker>
+    <marker id="a-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fb923c"/></marker>
+    <marker id="a-rose"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fb7185"/></marker>
+  </defs>
+
+  <!--  Background  -->
+  <rect width="960" height="855" fill="#0f172a"/>
+
+  <!--  Title  -->
+  <text x="480" y="28" text-anchor="middle" fill="#f1f5f9" font-size="16" font-weight="700">Butlr - AI Agent Pipeline Architecture</text>
+
+  <!-- 
+       ROW 1  External services  y=48-96
+   -->
+
+  <!-- Gmail REST API -->
+  <rect x="62" y="48" width="160" height="48" rx="8" fill="#1e3358" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="142" y="70"  text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">Gmail REST API</text>
+  <text x="142" y="86"  text-anchor="middle" fill="#60a5fa" font-size="9">oauth2.googleapis.com</text>
+
+  <!-- Auth Router -->
+  <rect x="268" y="48" width="175" height="48" rx="8" fill="#1a1a3a" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="355" y="70"  text-anchor="middle" fill="#a5b4fc" font-size="11" font-weight="600">Auth Router</text>
+  <text x="355" y="86"  text-anchor="middle" fill="#818cf8" font-size="9">api/auth.py  .  /login  /callback</text>
+
+  <!-- Token Store -->
+  <rect x="488" y="48" width="160" height="48" rx="8" fill="#1e1a42" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="568" y="70"  text-anchor="middle" fill="#c7d2fe" font-size="11" font-weight="600">Token Store</text>
+  <text x="568" y="86"  text-anchor="middle" fill="#a5b4fc" font-size="9">api/token_store.py</text>
+
+  <!-- Google Calendar API -->
+  <rect x="728" y="48" width="168" height="48" rx="8" fill="#1e3358" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="812" y="70"  text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">Google Calendar API</text>
+  <text x="812" y="86"  text-anchor="middle" fill="#60a5fa" font-size="9">(mock in CalendarTool)</text>
+
+  <!--  Row-1 internal arrows  -->
+  <!-- User browser -> Auth Router (conceptual dashed) -->
+  <line x1="222" y1="72" x2="268" y2="72" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a-indigo)"/>
+  <text x="245" y="67" text-anchor="middle" fill="#6366f1" font-size="8">browser</text>
+  <!-- Auth Router -> Token Store -->
+  <line x1="443" y1="72" x2="488" y2="72" stroke="#818cf8" stroke-width="1.5" marker-end="url(#a-indigo)"/>
+  <text x="465" y="67" text-anchor="middle" fill="#818cf8" font-size="8">tokens</text>
+
+  <!-- 
+       ROW 2  Tools  y=150-204
+   -->
+
+  <!-- GmailTool -->
+  <rect x="62" y="150" width="160" height="50" rx="8" fill="#14432a" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="142" y="172" text-anchor="middle" fill="#86efac" font-size="12" font-weight="600">GmailTool</text>
+  <text x="142" y="190" text-anchor="middle" fill="#4ade80" font-size="9">tools/gmail.py</text>
+
+  <!-- CalendarTool -->
+  <rect x="728" y="150" width="168" height="50" rx="8" fill="#14432a" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="812" y="172" text-anchor="middle" fill="#86efac" font-size="12" font-weight="600">CalendarTool</text>
+  <text x="812" y="190" text-anchor="middle" fill="#4ade80" font-size="9">tools/calendar.py (mock)</text>
+
+  <!-- Gmail API -> GmailTool -->
+  <line x1="142" y1="96" x2="142" y2="150" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#a-blue)"/>
+  <!-- Token Store -> GmailTool (dashed, refresh_token) -->
+  <path d="M568,96 L568,128 L142,128 L142,150" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a-indigo)"/>
+  <text x="355" y="122" text-anchor="middle" fill="#818cf8" font-size="9">refresh_token</text>
+  <!-- Calendar API -> CalendarTool -->
+  <line x1="812" y1="96" x2="812" y2="150" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#a-blue)"/>
+
+  <!-- 
+       CORE PROCESSING LAYER  y=230-400  (dashed border)
+   -->
+  <rect x="36" y="230" width="900" height="172" rx="12" fill="#0c1526" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="7,5"/>
+  <text x="54" y="247" fill="#334155" font-size="10">ProcessingService - workers/processing_service.py</text>
+
+  <!-- VectorStore -->
+  <rect x="52" y="258" width="195" height="80" rx="8" fill="#0c2d3d" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="149" y="284" text-anchor="middle" fill="#67e8f9" font-size="12" font-weight="600">VectorStore</text>
+  <text x="149" y="302" text-anchor="middle" fill="#a5f3fc" font-size="9">FAISS index (in-memory)</text>
+  <text x="149" y="317" text-anchor="middle" fill="#7dd3fc" font-size="9">memory/vector_store.py</text>
+  <text x="149" y="330" text-anchor="middle" fill="#22d3ee" font-size="8" font-style="italic">embeds via text-embedding-3-small</text>
+
+  <!-- Supervisor -->
+  <rect x="295" y="250" width="268" height="108" rx="10" fill="#1e0952" stroke="#a855f7" stroke-width="2"/>
+  <text x="429" y="278" text-anchor="middle" fill="#e879f9" font-size="14" font-weight="700">Supervisor Agent</text>
+  <text x="429" y="296" text-anchor="middle" fill="#c084fc" font-size="9">agents/supervisor.py</text>
+  <text x="429" y="312" text-anchor="middle" fill="#a78bfa" font-size="9">Orchestrates the full pipeline per email</text>
+  <text x="429" y="327" text-anchor="middle" fill="#7c3aed" font-size="9">classify  ->  retrieve context  ->  extract  ->  draft</text>
+  <text x="429" y="342" text-anchor="middle" fill="#5b21b6" font-size="9">filters low-priority + no-action tasks</text>
+
+  <!-- Calendar Agent -->
+  <rect x="705" y="258" width="195" height="80" rx="8" fill="#431407" stroke="#f97316" stroke-width="1.5"/>
+  <text x="802" y="284" text-anchor="middle" fill="#fed7aa" font-size="12" font-weight="600">Calendar Agent</text>
+  <text x="802" y="301" text-anchor="middle" fill="#fdba74" font-size="9">agents/calendar_agent.py</text>
+  <text x="802" y="317" text-anchor="middle" fill="#fca5a5" font-size="9">events[] -> ExtractedTask[]</text>
+  <text x="802" y="331" text-anchor="middle" fill="#f97316" font-size="8">calls gpt-4o-mini</text>
+
+  <!-- GmailTool -> VectorStore -->
+  <line x1="142" y1="200" x2="142" y2="258" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a-green)"/>
+  <!-- GmailTool -> Supervisor -->
+  <path d="M222,165 L429,165 L429,250" fill="none" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a-green)"/>
+  <text x="328" y="158" text-anchor="middle" fill="#4ade80" font-size="9">emails[]</text>
+  <!-- CalendarTool -> Calendar Agent -->
+  <line x1="812" y1="200" x2="802" y2="258" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a-green)"/>
+  <text x="832" y="232" fill="#4ade80" font-size="9">events[]</text>
+
+  <!-- 
+       ROW 4  Email Agents  y=428-498
+   -->
+
+  <!-- Classifier -->
+  <rect x="52" y="428" width="150" height="70" rx="8" fill="#431407" stroke="#f97316" stroke-width="1.5"/>
+  <text x="127" y="453" text-anchor="middle" fill="#fed7aa" font-size="12" font-weight="600">Classifier</text>
+  <text x="127" y="469" text-anchor="middle" fill="#fdba74" font-size="9">agents/classifier.py</text>
+  <text x="127" y="484" text-anchor="middle" fill="#fb923c" font-size="8">-> category . priority . is_noise</text>
+
+  <!-- RAG Agent -->
+  <rect x="226" y="428" width="150" height="70" rx="8" fill="#0c2d3d" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="301" y="453" text-anchor="middle" fill="#67e8f9" font-size="12" font-weight="600">RAG Agent</text>
+  <text x="301" y="469" text-anchor="middle" fill="#a5f3fc" font-size="9">agents/rag.py</text>
+  <text x="301" y="484" text-anchor="middle" fill="#7dd3fc" font-size="8">-> context chunks (top-3)</text>
+
+  <!-- Extractor -->
+  <rect x="400" y="428" width="150" height="70" rx="8" fill="#431407" stroke="#f97316" stroke-width="1.5"/>
+  <text x="475" y="453" text-anchor="middle" fill="#fed7aa" font-size="12" font-weight="600">Extractor</text>
+  <text x="475" y="469" text-anchor="middle" fill="#fdba74" font-size="9">agents/extractor.py</text>
+  <text x="475" y="484" text-anchor="middle" fill="#fb923c" font-size="8">-> ExtractedTask[]</text>
+
+  <!-- Drafter -->
+  <rect x="574" y="428" width="150" height="70" rx="8" fill="#431407" stroke="#f97316" stroke-width="1.5"/>
+  <text x="649" y="453" text-anchor="middle" fill="#fed7aa" font-size="12" font-weight="600">Drafter</text>
+  <text x="649" y="469" text-anchor="middle" fill="#fdba74" font-size="9">agents/drafter.py</text>
+  <text x="649" y="484" text-anchor="middle" fill="#fb923c" font-size="8">-> DraftResponse</text>
+
+  <!-- Supervisor -> Agents (via horizontal bus at y=412) -->
+  <path d="M340,358 L340,412 L127,412 L127,428" fill="none" stroke="#c084fc" stroke-width="1.5" marker-end="url(#a-purple)"/>
+  <path d="M390,358 L390,412 L301,412 L301,428" fill="none" stroke="#c084fc" stroke-width="1.5" marker-end="url(#a-purple)"/>
+  <path d="M455,358 L455,412 L475,412 L475,428" fill="none" stroke="#c084fc" stroke-width="1.5" marker-end="url(#a-purple)"/>
+  <path d="M515,358 L515,412 L649,412 L649,428" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a-purple)"/>
+  <text x="596" y="406" fill="#c084fc" font-size="8">if requires_reply</text>
+
+  <!-- RAG <-> VectorStore bidirectional -->
+  <!-- query: RAG left -> up -> VectorStore right -->
+  <path d="M226,455 L204,455 L204,318 L247,318" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a-cyan)"/>
+  <!-- context: VectorStore right -> down -> RAG left -->
+  <path d="M247,280 L214,280 L214,442 L226,442" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a-cyan)"/>
+  <text x="196" y="390" text-anchor="end" fill="#22d3ee" font-size="8">query</text>
+  <text x="196" y="296" text-anchor="end" fill="#22d3ee" font-size="8">context</text>
+
+  <!-- 
+       ROW 5  LLM Backend  y=558-645
+   -->
+  <rect x="38" y="555" width="710" height="90" rx="10" fill="#1c0a00" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="393" y="578" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="700">LLM Backend - utils/llm_client.py</text>
+
+  <!-- gpt-4o-mini sub-box -->
+  <rect x="55" y="588" width="228" height="40" rx="6" fill="#2d1a00" stroke="#f97316" stroke-width="1"/>
+  <text x="169" y="606" text-anchor="middle" fill="#fb923c" font-size="11" font-weight="600">gpt-4o-mini</text>
+  <text x="169" y="621" text-anchor="middle" fill="#fdba74" font-size="9">classify . extract . draft . calendar tasks</text>
+
+  <!-- text-embedding sub-box -->
+  <rect x="305" y="588" width="255" height="40" rx="6" fill="#0c2d3d" stroke="#06b6d4" stroke-width="1"/>
+  <text x="432" y="606" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="600">text-embedding-3-small</text>
+  <text x="432" y="621" text-anchor="middle" fill="#a5f3fc" font-size="9">embed emails + events for FAISS index</text>
+
+  <!-- Agents -> LLM (dashed amber) -->
+  <line x1="127" y1="498" x2="127" y2="555" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a-amber)"/>
+  <line x1="475" y1="498" x2="340" y2="555" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a-amber)"/>
+  <line x1="649" y1="498" x2="480" y2="555" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a-amber)"/>
+  <!-- Calendar Agent -> LLM -->
+  <path d="M802,338 L802,535 L490,535 L490,555" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a-amber)"/>
+  <text x="680" y="529" fill="#fbbf24" font-size="8">LLM calls</text>
+
+  <!-- VectorStore <- text-embedding (embed_text) -->
+  <path d="M432,588 L432,545 L149,545 L149,338" fill="none" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#a-cyan)"/>
+  <text x="295" y="541" text-anchor="middle" fill="#22d3ee" font-size="8">embed_text()</text>
+
+  <!-- 
+       ROW 6  PipelineResult  y=690-748
+   -->
+  <rect x="332" y="690" width="240" height="58" rx="8" fill="#052e16" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="452" y="715" text-anchor="middle" fill="#86efac" font-size="13" font-weight="600">PipelineResult</text>
+  <text x="452" y="733" text-anchor="middle" fill="#4ade80" font-size="9">models/schemas.py  .  tasks[] + drafts{}</text>
+
+  <!-- Supervisor -> PipelineResult (left side route) -->
+  <path d="M295,328 L220,328 L220,675 L332,675 L332,690" fill="none" stroke="#a855f7" stroke-width="1.5" marker-end="url(#a-purple)"/>
+  <!-- Calendar Agent -> PipelineResult (right side route) -->
+  <path d="M900,298 L930,298 L930,675 L572,675 L572,690" fill="none" stroke="#f97316" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+  <!-- 
+       ROW 7  Serving  y=768-826
+   -->
+
+  <!-- FastAPI -->
+  <rect x="205" y="770" width="200" height="56" rx="8" fill="#1c0a00" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="305" y="796" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="600">FastAPI</text>
+  <text x="305" y="813" text-anchor="middle" fill="#fdba74" font-size="9">api/main.py  .  GET /result  POST /run</text>
+
+  <!-- Streamlit -->
+  <rect x="555" y="770" width="188" height="56" rx="8" fill="#1c0219" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="649" y="796" text-anchor="middle" fill="#fb7185" font-size="12" font-weight="600">Streamlit UI</text>
+  <text x="649" y="813" text-anchor="middle" fill="#fca5a1" font-size="9">ui/app.py  .  localhost:8501</text>
+
+  <!-- PipelineResult -> FastAPI -->
+  <path d="M412,748 L305,770" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#a-green)"/>
+
+  <!-- FastAPI <-> Streamlit -->
+  <line x1="405" y1="795" x2="555" y2="795" stroke="#fb923c" stroke-width="1.5" marker-end="url(#a-orange)"/>
+  <line x1="555" y1="808" x2="405" y2="808" stroke="#fb7185" stroke-width="1.5" marker-end="url(#a-rose)"/>
+  <text x="480" y="790" text-anchor="middle" fill="#fb923c" font-size="8">JSON response</text>
+  <text x="480" y="820" text-anchor="middle" fill="#fb7185" font-size="8">HTTP request</text>
+
+  <!-- 
+       LEGEND  (bottom-right)
+   -->
+  <rect x="755" y="430" width="192" height="235" rx="8" fill="#0c1526" stroke="#1e293b" stroke-width="1"/>
+  <text x="851" y="451" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600">Legend</text>
+
+  <rect x="769" y="462" width="13" height="11" rx="2" fill="#1e3358"  stroke="#60a5fa"  stroke-width="1"/><text x="788" y="473" fill="#93c5fd" font-size="9">External Service</text>
+  <rect x="769" y="480" width="13" height="11" rx="2" fill="#14432a"  stroke="#22c55e"  stroke-width="1"/><text x="788" y="491" fill="#86efac" font-size="9">Ingestion Tool</text>
+  <rect x="769" y="498" width="13" height="11" rx="2" fill="#0c2d3d"  stroke="#06b6d4"  stroke-width="1"/><text x="788" y="509" fill="#67e8f9" font-size="9">Memory / VectorStore</text>
+  <rect x="769" y="516" width="13" height="11" rx="2" fill="#1e0952"  stroke="#a855f7"  stroke-width="1"/><text x="788" y="527" fill="#e879f9" font-size="9">Supervisor (Orchestrator)</text>
+  <rect x="769" y="534" width="13" height="11" rx="2" fill="#431407"  stroke="#f97316"  stroke-width="1"/><text x="788" y="545" fill="#fed7aa" font-size="9">AI Agent</text>
+  <rect x="769" y="552" width="13" height="11" rx="2" fill="#1c0a00"  stroke="#f59e0b"  stroke-width="1"/><text x="788" y="563" fill="#fbbf24" font-size="9">LLM Backend</text>
+  <rect x="769" y="570" width="13" height="11" rx="2" fill="#1a1a3a"  stroke="#6366f1"  stroke-width="1"/><text x="788" y="581" fill="#a5b4fc" font-size="9">Auth (OAuth 2.0 flow)</text>
+
+  <line x1="769" y1="594" x2="782" y2="594" stroke="#4ade80"  stroke-width="1.5"               marker-end="url(#a-green)" /><text x="788" y="598" fill="#4ade80"  font-size="9">Data flow</text>
+  <line x1="769" y1="610" x2="782" y2="610" stroke="#c084fc"  stroke-width="1.5"               marker-end="url(#a-purple)"/><text x="788" y="614" fill="#c084fc"  font-size="9">Orchestration command</text>
+  <line x1="769" y1="626" x2="782" y2="626" stroke="#fbbf24"  stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#a-amber)" /><text x="788" y="630" fill="#fbbf24"  font-size="9">LLM call (dashed)</text>
+  <line x1="769" y1="642" x2="782" y2="642" stroke="#22d3ee"  stroke-width="1.5"               marker-end="url(#a-cyan)"  /><text x="788" y="646" fill="#22d3ee"  font-size="9">Vector search / embed</text>
+  <line x1="769" y1="658" x2="782" y2="658" stroke="#818cf8"  stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#a-indigo)"/><text x="788" y="662" fill="#818cf8"  font-size="9">Auth / token flow</text>
+</svg>

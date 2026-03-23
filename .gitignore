@@ -201,7 +201,19 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Google OAuth credentials — never commit
+client_secret.json
+credentials.json
+
+# Butlr runtime data — tokens, encryption key, processed IDs, and vector store
+.butlr_tokens
+.butlr_key
+.butlr_processed
+.butlr_store/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+.vscode/
+.cursor/
