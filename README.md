@@ -1,6 +1,6 @@
-# Butlr
+# Butlr - Only tells you what is important for you
 
-Butlr is a FastAPI-based assistant that monitors Gmail and Google Calendar, extracts actionable work, generates draft replies, and surfaces the results in a lightweight web dashboard. The application combines Google API integrations, a multi-agent processing pipeline, and retrieval-augmented context from a local FAISS vector store.
+Butlr is a FastAPI-based assistant that monitors Gmail and Google Calendar, extracts actionable work, generates draft replies, and surfaces the results in a lightweight web dashboard providing you with only the information that you need. The application combines Google API integrations, a multi-agent processing pipeline, and retrieval-augmented context from a local FAISS vector store.
 
 ![Butlr architecture](architecture.svg)
 
