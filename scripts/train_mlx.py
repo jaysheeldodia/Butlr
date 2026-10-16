@@ -112,6 +112,12 @@ def main() -> None:
         help="override max sequence length (default 4096; 2048 truncates long emails)",
     )
     parser.add_argument(
+        "--mask-prompt",
+        action="store_true",
+        help="train loss on completions only. DEFAULT OFF: with Qwen3 templates and mostly-empty completions, masked loss spans ~10 tokens/row and diverges at lr 2e-4. Off = run-1 recipe that reached val 1.34.",
+    )
+    parser.add_argument("--learning-rate", type=float, default=None, help="override lr (default 2e-4)")
+    parser.add_argument(
         "--rank",
         type=int,
         default=None,
@@ -170,8 +176,7 @@ def main() -> None:
         "--num-layers", "16",
         "--batch-size", str(HYPERPARAMS["batch_size"]),
         "--grad-accumulation-steps", str(HYPERPARAMS["grad_accumulation_steps"]),
-        "--learning-rate", str(HYPERPARAMS["learning_rate"]),
-        "--mask-prompt",
+        "--learning-rate", str(args.learning_rate or HYPERPARAMS["learning_rate"]),
         "--iters", str(iters),
         "--steps-per-report", str(HYPERPARAMS["steps_per_report"]),
         "--steps-per-eval", str(HYPERPARAMS["steps_per_eval"]),
@@ -179,6 +184,8 @@ def main() -> None:
         "--save-every", str(HYPERPARAMS["steps_per_eval"]),
         "--adapter-path", str(work / "adapter"),
     ]
+    if args.mask_prompt:
+        cmd.append("--mask-prompt")
     if config_path:
         cmd += ["--config", str(config_path)]
     cmd = [c for c in cmd if c]
