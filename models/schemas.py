@@ -33,6 +33,7 @@ class ExtractedTask(BaseModel):
     description: str
     source: Literal["email", "calendar"]
     priority: Literal["high", "medium", "low"]
+    category: Literal["reply", "application", "interview", "admin", "other"] = "other"
     action_required: bool
     deadline: Optional[str] = None
     related_email_id: Optional[str] = None

@@ -46,6 +46,7 @@ class ProcessingSnapshot:
     next_poll_at: str | None = None
     last_error: str | None = None
     processed_email_count: int = 0
+    dropped_email_count: int = 0
 
 
 class ProcessingService:
@@ -119,6 +120,7 @@ class ProcessingService:
         logger.info("Starting Butlr processing run")
         completed_at = datetime.now(tz=UTC)
         next_poll_at = self._next_poll_time(from_time=completed_at)
+        stats: dict = {}
 
         try:
             emails = self.gmail_tool.run()
@@ -157,7 +159,9 @@ class ProcessingService:
                     if force or e.id not in self._processed_calendar_event_ids
                 ]
 
-            result = run_pipeline(new_emails, vector_store, calendar_events=new_calendar_events)
+            result = run_pipeline(
+                new_emails, vector_store, calendar_events=new_calendar_events, stats=stats
+            )
 
             with self._lock:
                 self._processed_email_ids.update(e.id for e in emails)
@@ -175,6 +179,7 @@ class ProcessingService:
                     next_poll_at=next_poll_at,
                     last_error=None,
                     processed_email_count=len(new_emails),
+                    dropped_email_count=stats.get("dropped_email_count", 0),
                 )
                 return self._copy_snapshot()
 
