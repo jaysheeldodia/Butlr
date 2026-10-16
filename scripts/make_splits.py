@@ -31,13 +31,28 @@ def thread_key(subject: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--labeled", default="data/labeled/weak.jsonl")
-    parser.add_argument("--val-size", type=int, default=150)
-    parser.add_argument("--test-size", type=int, default=150)
+    parser.add_argument(
+        "--val-size",
+        type=int,
+        default=None,
+        help="val rows; default 10%% of the pool (min 25)",
+    )
+    parser.add_argument(
+        "--test-size",
+        type=int,
+        default=None,
+        help="test rows; default 10%% of the pool (min 25)",
+    )
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
     labeled_path = REPO_ROOT / args.labeled
     rows = [json.loads(line) for line in labeled_path.read_text().splitlines() if line.strip()]
+
+    # Small pools: default val/test to 10% each (floor 25 rows) so most data
+    # stays in train. The old fixed 150/150 was sized for a 2,500-row pool.
+    val_size = args.val_size if args.val_size is not None else max(25, len(rows) // 10)
+    test_size = args.test_size if args.test_size is not None else max(25, len(rows) // 10)
 
     # Cluster by thread.
     threads: dict[str, list[dict]] = {}
@@ -56,9 +71,16 @@ def main() -> None:
             total += len(threads[key])
         return chosen
 
-    test_keys = take(keys, args.test_size)
-    val_keys = take(keys, args.val_size)
+    test_keys = take(keys, test_size)
+    val_keys = take(keys, val_size)
     train_keys = keys
+
+    train_count = sum(len(threads[k]) for k in train_keys)
+    if train_count < 200:
+        print(
+            f"WARNING: only {train_count} train rows. "
+            "More data would help — widen GMAIL_QUERY and re-export if the pool stays small."
+        )
 
     splits = {"train": train_keys, "val": val_keys, "test": test_keys}
     out_dir = REPO_ROOT / "data" / "splits"

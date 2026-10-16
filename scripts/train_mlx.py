@@ -41,9 +41,14 @@ HYPERPARAMS = {
     "dropout": 0.0,
     "learning_rate": 2e-4,
     "batch_size": 2,
-    "grad_accumulate": 8,
-    "iters": 300,          # tune: ~2 epochs over your real train size
-    "steps_per_eval": 50,
+    "grad_accumulation_steps": 8,
+    # iters are OPTIMIZER STEPS in mlx-lm, not samples.
+    # effective batch = batch_size * grad_accumulation_steps = 16,
+    # so iters per epoch ~= n_train / 16. Default below: ~2 epochs.
+    "iters_per_epoch": None,  # computed from n_train at runtime
+    "epochs": 2,
+    "steps_per_eval": 10,
+    "steps_per_report": 5,
     "max_seq_length": 2048,
 }
 
@@ -119,19 +124,26 @@ def main() -> None:
     n_valid = to_mlx_rows(valid_rows, work / "valid.jsonl")
     print(f"Converted {n_train} train rows, {n_valid} valid rows -> {work}")
 
-    iters = args.iters or max(100, min(HYPERPARAMS["iters"], n_train))  # safe default
+    # iters are OPTIMIZER STEPS. Effective batch = batch_size *
+    # grad_accumulation_steps. With ~390 train rows, effective batch 16,
+    # 2 epochs: ~49 iters. The old fixed 300 was ~12 epochs — overfitting
+    # territory. Auto-compute from the real row count; --iters overrides.
+    effective_batch = HYPERPARAMS["batch_size"] * HYPERPARAMS["grad_accumulation_steps"]
+    iters = args.iters or max(20, (n_train * HYPERPARAMS["epochs"]) // effective_batch)
+    print(f"iters: {iters} (= {n_train} rows x {HYPERPARAMS['epochs']} epochs / effective batch {effective_batch})")
     cmd = [
         sys.executable, "-m", "mlx_lm", "lora",
         "--model", BASE_MODEL,
         "--train",
-        "--data", str(work / "train.jsonl"),
-        "--val-data", str(work / "valid.jsonl") if n_valid else "",
+        "--data", str(work),
         "--fine-tune-type", "lora",
         "--num-layers", "16",
         "--batch-size", str(HYPERPARAMS["batch_size"]),
-        "--grad-accumulate", str(HYPERPARAMS["grad_accumulate"]),
+        "--grad-accumulation-steps", str(HYPERPARAMS["grad_accumulation_steps"]),
         "--learning-rate", str(HYPERPARAMS["learning_rate"]),
+        "--mask-prompt",
         "--iters", str(iters),
+        "--steps-per-report", str(HYPERPARAMS["steps_per_report"]),
         "--steps-per-eval", str(HYPERPARAMS["steps_per_eval"]),
         "--max-seq-length", str(HYPERPARAMS["max_seq_length"]),
         "--save-every", str(HYPERPARAMS["steps_per_eval"]),
