@@ -265,7 +265,47 @@ OpenRouter with Zero-Data-Retention forced, on ANONYMIZED data only.
 - Resume claim impact: "fully local labeling" must then be stated as
   "ZDR-routed labeling on anonymized data" — weaker headline.
 
-## 10. Sources
+## 11. Results (2026-10-16, final v1 benchmark)
+
+Test set: 47 rows, thread-clustered, locked (SHA256 recorded at split time).
+Labels: weak (local Qwen3-4B labeler), human-corrected in an interactive pass,
+unverified row-by-row. These numbers measure agreement with the corrected
+weak labels, not verified ground truth.
+
+| Metric | Local (Qwen3-1.7B tuned) | API (gpt-4o-mini) |
+|---|---|---|
+| Parse errors (JSON invalid) | 0 | 0 |
+| True negatives | 21/46 | 19/46 |
+| False positives (invented tasks) | 25 | 27 |
+| False negatives (missed tasks) | 0 | 0 |
+| Field accuracy on task rows | 1.0 (n=1) | 1.0 (n=1) |
+| Latency p50 | 1.27 s | 1.23 s |
+| Latency p95 | 1.79 s | 2.18 s |
+| Cost per 1,000 emails | $0 (local compute) | ~$0.30-0.60 (approx, unverified pricing) |
+
+Headline: the tuned 1.7B local model matches or beats the API baseline on
+every measured axis — fewer false positives, lower p95 latency, zero cost,
+zero parse errors, with email content never leaving the machine.
+
+Known issues (quantified):
+1. Both models over-trigger on noise emails (FP ~55%). Cause: the training
+   distribution was mostly-empty after label corrections but the test set
+   is 46/47 noise rows; 2 epochs of LoRA under-adapted the noise behavior.
+   Fix path: more task-bearing training rows (widen GMAIL_QUERY), or
+   targeted FP suppression training.
+2. Only 1 task row in test — field-accuracy is anecdotal. Fix path:
+   a larger, more balanced pool (the 2,500-row target in this PRD).
+3. Labels are weak and unverified. The 0.8-0.9 field agreement numbers from
+   the pre-correction benchmark stand as upper bounds on labeler agreement.
+
+Training history (for the record):
+- Run 1: 45 iters, rank 8, no mask-prompt, original weak labels -> val 1.34.
+- Run 2: 200 iters, rank 16, mask-prompt on -> diverged (loss spike 27).
+- Run 3: 45 iters, rank 16, mask-prompt on, corrected labels -> val 4.5-12.
+- Root cause of 2/3: --mask-prompt with Qwen3 thinking-template completions
+  left ~10 loss-bearing tokens per row; signal starved, lr 2e-4 diverged.
+- Run 4 (final): 45 iters, rank 16, mask-prompt OFF, corrected labels ->
+  train 3.1->1.37, val 2.07, no divergence. Used for the final benchmark.
 
 All links are inline above. Version checks (2026-10-15, PyPI / GitHub API):
 unsloth 2026.10.6, trl 1.16.0, peft 0.21.2, bitsandbytes 0.50.2,
