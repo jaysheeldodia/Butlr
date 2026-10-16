@@ -1,0 +1,68 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "email",
+          "calendar"
+        ]
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "high",
+          "medium",
+          "low"
+        ]
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "reply",
+          "application",
+          "interview",
+          "admin",
+          "other"
+        ]
+      },
+      "action_required": {
+        "type": "boolean"
+      },
+      "deadline": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "related_email_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "description",
+      "source",
+      "priority",
+      "category",
+      "action_required",
+      "deadline",
+      "related_email_id"
+    ]
+  }
+}

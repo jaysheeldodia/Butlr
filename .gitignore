@@ -210,6 +210,10 @@ credentials.json
 .butlr_key
 .butlr_processed
 .butlr_store/
+# Training data and benchmark results — email content must never be committed
+data/
+results/
+.butlr_data/
 
 # Marimo
 marimo/_static/

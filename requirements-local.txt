@@ -1,0 +1,4 @@
+# Local-model extras. Install with: uv pip install -r requirements-local.txt
+# These packages run only on Jay's machine and never touch cloud services.
+sentence-transformers>=3.0
+httpx>=0.28

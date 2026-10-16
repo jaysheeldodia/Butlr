@@ -52,6 +52,30 @@ def chat(system_prompt: str, user_prompt: str) -> str:
     Returns the assistant's text response as a plain string.
     """
     try:
+        if LLM_PROVIDER == "local":
+            # Local OpenAI-compatible server (llama-server / Ollama).
+            # Email content stays on this machine. Lazy import so tests and
+            # cloud providers never need httpx at module load time.
+            import httpx
+
+            from config.settings import LOCAL_LLM_MODEL, LOCAL_LLM_TIMEOUT_SECONDS, LOCAL_LLM_URL
+
+            response = httpx.post(
+                LOCAL_LLM_URL,
+                json={
+                    "model": LOCAL_LLM_MODEL,
+                    "max_tokens": 1024,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                },
+                timeout=LOCAL_LLM_TIMEOUT_SECONDS,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            return payload["choices"][0]["message"]["content"] or ""
+
         if LLM_PROVIDER == "openai":
             client = OpenAI(api_key=OPENAI_API_KEY, max_retries=3)
             response = client.chat.completions.create(
