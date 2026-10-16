@@ -16,6 +16,9 @@ from config.settings import (
 )
 from utils.logger import logger
 
+_UNSET = object()
+_TASK_SCHEMA: object = _UNSET  # lazy-loaded task JSON schema for llama-server grammar
+
 
 def parse_json_response(raw_response: str) -> object:
     """
@@ -82,6 +85,21 @@ def chat(system_prompt: str, user_prompt: str) -> str:
                     {"role": "user", "content": user_prompt},
                 ],
             }
+            # Grammar-constrained decoding: llama-server converts this schema
+            # to a GBNF grammar, so invalid JSON tokens are impossible
+            # (llama.cpp PR #5978/#9527). Applied only when the schema file
+            # exists. Ignored by servers that don't support response_format.
+            global _TASK_SCHEMA
+            if _TASK_SCHEMA is _UNSET:
+                from pathlib import Path as _Path
+
+                _schema_file = _Path(__file__).resolve().parent.parent / "scripts" / "task_schema.json"
+                _TASK_SCHEMA = _json.loads(_schema_file.read_text()) if _schema_file.exists() else None
+            if _TASK_SCHEMA is not None:
+                body["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {"name": "butlr_tasks", "strict": True, "schema": _TASK_SCHEMA},
+                }
             # Optional provider-specific extras (e.g. OpenRouter ZDR routing:
             # {"provider": {"zdr": true, "data_collection": "deny"}}).
             if LOCAL_LLM_EXTRA_BODY:
