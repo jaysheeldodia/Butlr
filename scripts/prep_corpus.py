@@ -3,11 +3,17 @@
 Run manually by Jay. Reads data/raw/emails.jsonl, writes
 data/corpus/pool.jsonl. Prints counts only.
 
+Default keeps ONE email per thread (the longest body). With --keep-all,
+every email in a thread is kept — more rows, but reply/follow-up emails
+tend to be lower quality labels. Splits stay thread-clustered either way,
+so there is no train/test leakage.
+
 Usage:
-    python -m scripts.prep_corpus
+    python -m scripts.prep_corpus [--keep-all]
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -36,6 +42,14 @@ def thread_key(subject: str) -> str:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--keep-all",
+        action="store_true",
+        help="keep every email per thread instead of only the longest body",
+    )
+    args = parser.parse_args()
+
     if not RAW_PATH.exists():
         print(f"Missing {RAW_PATH}. Run scripts.export_emails first.")
         sys.exit(1)
@@ -56,15 +70,22 @@ def main() -> None:
     for row in deduped:
         row["body"] = cut_quoted_replies(row["body"]) or row["body"]
 
-    # Cluster by thread; keep the longest body per thread (most context).
-    threads: dict[str, dict] = {}
+    # Cluster by thread. Default: keep the longest body per thread (most
+    # context). --keep-all: keep every email, sorted oldest first so the
+    # thread reads in order; make_splits still assigns whole threads to one
+    # split, so keeping all emails cannot leak across train/test.
+    threads: dict[str, list[dict]] = {}
     for row in deduped:
-        key = thread_key(row["subject"])
-        current = threads.get(key)
-        if current is None or len(row["body"]) > len(current["body"]):
-            threads[key] = row
+        threads.setdefault(thread_key(row["subject"]), []).append(row)
 
-    pool = list(threads.values())
+    pool: list[dict] = []
+    if args.keep_all:
+        for members in threads.values():
+            members.sort(key=lambda r: r["timestamp"])
+            pool.extend(members)
+    else:
+        for members in threads.values():
+            pool.append(max(members, key=lambda r: len(r["body"])))
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with OUT_PATH.open("w") as fh:
         for row in pool:
@@ -72,7 +93,8 @@ def main() -> None:
 
     print(f"Raw rows:           {total}")
     print(f"After ID dedupe:    {len(deduped)}")
-    print(f"After thread merge: {len(pool)}")
+    print(f"Threads:            {len(threads)}")
+    print(f"Pool rows:          {len(pool)} ({'keep-all' if args.keep_all else 'longest-per-thread'})")
     print(f"Wrote {OUT_PATH}")
 
 
