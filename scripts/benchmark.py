@@ -49,22 +49,26 @@ def run_path(test_path: Path, path_name: str) -> dict:
     for row in rows:
         truth = ExtractedTask(**row["tasks"][0]) if row["tasks"] else None
         start = time.perf_counter()
+        parse_ok = True
         try:
             raw = chat(EXTRACTOR_SYSTEM_PROMPT, build_user_prompt(row))
             payload = parse_json_response(raw)
             pred_tasks = [ExtractedTask(**item) for item in payload] if isinstance(payload, list) else []
         except Exception:
             pred_tasks = []
+            parse_ok = False
         latencies.append(time.perf_counter() - start)
 
         # Score the first predicted task against the first truth task.
-        # Empty-vs-empty counts as correct (true negative).
-        if truth is None and not pred_tasks:
+        # A parse failure is ALWAYS an error — never scored as a true
+        # negative, even when the truth is an empty task list. (The old
+        # scoring silently counted these as correct, inflating accuracy.)
+        if truth is None and not pred_tasks and parse_ok:
             valid += 1
             for field in field_scores:
                 field_scores[field][0] += 1
                 field_scores[field][1] += 1
-        elif truth is not None and pred_tasks:
+        elif truth is not None and pred_tasks and parse_ok:
             pred = pred_tasks[0]
             valid += 1
             for field in field_scores:
