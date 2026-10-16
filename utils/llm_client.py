@@ -92,6 +92,18 @@ def chat(system_prompt: str, user_prompt: str) -> str:
                 headers=headers,
                 timeout=LOCAL_LLM_TIMEOUT_SECONDS,
             )
+            if response.status_code >= 400:
+                # Surface the server's own error message — llama-server and
+                # OpenRouter both explain 400s in the body (e.g. context
+                # overflow, unknown model). Without this you get only a bare
+                # '400 Bad Request' and have to guess.
+                detail = response.text[:500]
+                logger.error(
+                    "Local LLM endpoint returned %s for %s: %s",
+                    response.status_code,
+                    LOCAL_LLM_URL,
+                    detail,
+                )
             response.raise_for_status()
             payload = response.json()
             return payload["choices"][0]["message"]["content"] or ""
