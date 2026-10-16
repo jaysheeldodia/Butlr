@@ -76,6 +76,7 @@ def chat(system_prompt: str, user_prompt: str) -> str:
             body: dict = {
                 "model": LOCAL_LLM_MODEL,
                 "max_tokens": 1024,
+                "temperature": 0,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
