@@ -59,9 +59,10 @@ def test_local_provider_posts_to_local_url(monkeypatch):
         def json(self):
             return {"choices": [{"message": {"content": "[]"}}]}
 
-    def fake_post(url, json=None, timeout=None):
+    def fake_post(url, json=None, timeout=None, headers=None):
         captured["url"] = url
         captured["payload"] = json
+        captured["headers"] = headers
         return FakeResponse()
 
     monkeypatch.setattr("utils.llm_client.LLM_PROVIDER", "local")
@@ -70,6 +71,68 @@ def test_local_provider_posts_to_local_url(monkeypatch):
     assert out == "[]"
     assert captured["url"].startswith("http://127.0.0.1")
     assert captured["payload"]["messages"][0]["role"] == "system"
+
+
+def test_local_provider_sends_bearer_and_extra_body(monkeypatch):
+    import utils.llm_client as lc
+
+    captured = {}
+
+    class FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"choices": [{"message": {"content": "[]"}}]}
+
+    def fake_post(url, json=None, timeout=None, headers=None):
+        captured["url"] = url
+        captured["payload"] = json
+        captured["headers"] = headers
+        return FakeResponse()
+
+    monkeypatch.setattr("utils.llm_client.LLM_PROVIDER", "local")
+    monkeypatch.setattr("config.settings.LOCAL_LLM_API_KEY", "sk-test-123")
+    monkeypatch.setattr(
+        "config.settings.LOCAL_LLM_EXTRA_BODY",
+        '{"provider": {"zdr": true, "data_collection": "deny"}}',
+    )
+    monkeypatch.setattr("httpx.post", fake_post)
+    lc.chat("s", "u")
+    assert captured["headers"]["Authorization"] == "Bearer sk-test-123"
+    assert captured["payload"]["provider"] == {"zdr": True, "data_collection": "deny"}
+
+
+def test_local_provider_omits_bearer_when_no_key(monkeypatch):
+    import utils.llm_client as lc
+
+    captured = {}
+
+    class FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"choices": [{"message": {"content": "x"}}]}
+
+    def fake_post(url, json=None, timeout=None, headers=None):
+        captured["headers"] = headers
+        return FakeResponse()
+
+    monkeypatch.setattr("utils.llm_client.LLM_PROVIDER", "local")
+    monkeypatch.setattr("config.settings.LOCAL_LLM_API_KEY", "")
+    monkeypatch.setattr("httpx.post", fake_post)
+    lc.chat("s", "u")
+    assert captured["headers"] == {}
+
+
+def test_label_runner_forces_local_provider(monkeypatch):
+    """label_runner must route to LOCAL_LLM_URL even when .env says openai."""
+    import scripts.label_runner as lr
+    import utils.llm_client as lc
+
+    assert lc.LLM_PROVIDER == "local"  # set at label_runner import time
+    assert lr.settings.LLM_PROVIDER == "local"
 
 
 # ── Embeddings: no cloud call ────────────────────────────────────────────────

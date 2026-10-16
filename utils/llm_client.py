@@ -53,23 +53,43 @@ def chat(system_prompt: str, user_prompt: str) -> str:
     """
     try:
         if LLM_PROVIDER == "local":
-            # Local OpenAI-compatible server (llama-server / Ollama).
-            # Email content stays on this machine. Lazy import so tests and
-            # cloud providers never need httpx at module load time.
+            # OpenAI-compatible endpoint: llama-server / Ollama on this
+            # machine, or a remote OpenAI-compatible API (e.g. OpenRouter)
+            # when LOCAL_LLM_URL points there. Lazy import so tests and cloud
+            # providers never need httpx at module load time.
+            import json as _json
+
             import httpx
 
-            from config.settings import LOCAL_LLM_MODEL, LOCAL_LLM_TIMEOUT_SECONDS, LOCAL_LLM_URL
+            from config.settings import (
+                LOCAL_LLM_API_KEY,
+                LOCAL_LLM_EXTRA_BODY,
+                LOCAL_LLM_MODEL,
+                LOCAL_LLM_TIMEOUT_SECONDS,
+                LOCAL_LLM_URL,
+            )
+
+            headers: dict[str, str] = {}
+            if LOCAL_LLM_API_KEY:
+                headers["Authorization"] = f"Bearer {LOCAL_LLM_API_KEY}"
+
+            body: dict = {
+                "model": LOCAL_LLM_MODEL,
+                "max_tokens": 1024,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            }
+            # Optional provider-specific extras (e.g. OpenRouter ZDR routing:
+            # {"provider": {"zdr": true, "data_collection": "deny"}}).
+            if LOCAL_LLM_EXTRA_BODY:
+                body.update(_json.loads(LOCAL_LLM_EXTRA_BODY))
 
             response = httpx.post(
                 LOCAL_LLM_URL,
-                json={
-                    "model": LOCAL_LLM_MODEL,
-                    "max_tokens": 1024,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                },
+                json=body,
+                headers=headers,
                 timeout=LOCAL_LLM_TIMEOUT_SECONDS,
             )
             response.raise_for_status()

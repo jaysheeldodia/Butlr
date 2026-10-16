@@ -38,6 +38,10 @@ CALENDAR_LOOKAHEAD_DAYS: int = int(os.getenv("CALENDAR_LOOKAHEAD_DAYS", "14").st
 LOCAL_LLM_URL: str = os.getenv("LOCAL_LLM_URL", "http://127.0.0.1:8080/v1/chat/completions").strip()
 LOCAL_LLM_MODEL: str = os.getenv("LOCAL_LLM_MODEL", "butlr-extractor").strip()
 LOCAL_LLM_TIMEOUT_SECONDS: float = float(os.getenv("LOCAL_LLM_TIMEOUT_SECONDS", "120").strip())
+LOCAL_LLM_API_KEY: str = os.getenv("LOCAL_LLM_API_KEY", "").strip()
+# Extra JSON merged into the request body. Example (OpenRouter ZDR):
+# LOCAL_LLM_EXTRA_BODY={"provider": {"zdr": true, "data_collection": "deny"}}
+LOCAL_LLM_EXTRA_BODY: str = os.getenv("LOCAL_LLM_EXTRA_BODY", "").strip()
 
 # Local embeddings (BAAI/bge-small-en-v1.5, MIT licence, 384 dims).
 # Replaces the OpenAI embeddings API so email bodies never leave the machine.

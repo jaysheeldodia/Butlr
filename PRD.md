@@ -51,7 +51,7 @@ cloud dependency for email content.
 |---|---|---|---|
 | D1 | Fine-tune target | Qwen3-1.7B-Instruct | Dense text-only. Apache-2.0. Highest instruction-following of the small candidates in non-thinking mode (IFEval 68.2, official card). Most mature QLoRA and GGUF tooling. |
 | D2 | Fallback target | Qwen3.5-2B-Instruct | Unsloth supports it (0.8B/2B/4B notebooks). Stronger on knowledge tests, weaker on IFEval non-thinking (61.2). Hybrid arch, 248k vocab, newer tooling. Use only if D1 underfits. |
-| D3 | Weak labeler | Qwen3-8B Q4_K_M via llama.cpp or Ollama on the Mac, thinking mode off | Jay's choice (confirmed). Q4_K_M file is about 5 GB. Free RAM is ~6 GB, so close memory-heavy apps before the label run. If the run still OOMs or swaps, drop to Q3_K_M (~4 GB) or IQ4_XS. |
+| D3 | Weak labeler | Qwen3-4B Q4_K_M via llama-server on the Mac, thinking mode off | Changed from 8B (Jay's request for speed; only ~6 GB free RAM). Q4_K_M is ~2.5 GB, roughly 2x faster, quality is sufficient for weak labels (human-verified on val/test). Fallback if quality is too low: Qwen3-8B Q4_K_M with apps closed, or Q3_K_M quant. |
 | D4 | Embeddings | BAAI/bge-small-en-v1.5, local, 384 dims | MIT licence, 33.6M params, strong small retriever. Removes the OpenAI embeddings call. FAISS dim changes 1536 -> 384; rebuild the index. |
 | D5 | Training path (primary) | MLX LoRA on the Mac with mlx-lm, Qwen3-1.7B 4-bit | Zero cloud. Email data never leaves the machine. mlx-lm 0.32.1 supports Qwen3 QLoRA. CONFIRMED: Mac is Apple Silicon (M4), so this path is valid. |
 | D6 | Training path (fallback) | Colab free T4 + Unsloth, anonymized data only | Only if MLX fails or is too slow. Anonymization (D8) is mandatory before any upload. |
@@ -244,6 +244,26 @@ test, never the raw pool. Three options, in order of preference:
 
 Rule in all cases: the uploaded file must come from scripts/anonymize.py
 output. Verify a random sample of 20 rows by eye before uploading.
+
+## 9b. ZDR-routed OpenRouter labeling (optional speed fallback)
+
+If local labeling is too slow, the labeler may instead run through
+OpenRouter with Zero-Data-Retention forced, on ANONYMIZED data only.
+
+- ZDR is per-request: send
+  "provider": {"zdr": true, "data_collection": "deny"} in the body.
+  Implemented: set LOCAL_LLM_EXTRA_BODY to that JSON, LOCAL_LLM_URL to
+  https://openrouter.ai/api/v1/chat/completions, LOCAL_LLM_API_KEY to the
+  OpenRouter key. If no ZDR endpoint exists for the model, the request
+  FAILS instead of silently routing to a logging provider (fail-closed).
+  Sources: https://openrouter.ai/blog/insights/zero-data-retention/
+  https://openrouter.ai/docs/guides/features/zdr
+- NEVER use free OpenRouter models on any email data (free endpoints
+  commonly log or train).
+- Raw (un-anonymized) email NEVER goes to OpenRouter under any setting.
+  This path is anonymized-data-only, same tier as the Colab fallback.
+- Resume claim impact: "fully local labeling" must then be stated as
+  "ZDR-routed labeling on anonymized data" — weaker headline.
 
 ## 10. Sources
 
