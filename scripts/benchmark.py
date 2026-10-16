@@ -43,7 +43,7 @@ def run_path(test_path: Path, path_name: str) -> dict:
 
     rows = [json.loads(line) for line in test_path.read_text().splitlines() if line.strip()]
     latencies: list[float] = []
-    valid = invalid = 0
+    parse_errors = false_positives = false_negatives = true_negatives = task_correct = 0
     field_scores = {"priority": [0, 0], "category": [0, 0], "action_required": [0, 0]}
 
     for row in rows:
@@ -60,23 +60,28 @@ def run_path(test_path: Path, path_name: str) -> dict:
         latencies.append(time.perf_counter() - start)
 
         # Score the first predicted task against the first truth task.
-        # A parse failure is ALWAYS an error — never scored as a true
-        # negative, even when the truth is an empty task list. (The old
-        # scoring silently counted these as correct, inflating accuracy.)
-        if truth is None and not pred_tasks and parse_ok:
-            valid += 1
+        # A real JSON parse failure is a parse_error. A prediction that
+        # disagrees about task-existence (model invents tasks on a noise
+        # email, or misses tasks on an action email) is a FALSE POSITIVE or
+        # FALSE NEGATIVE — reported separately, never hidden in parse_errors.
+        if not parse_ok:
+            parse_errors += 1
+        elif truth is None and not pred_tasks:
+            true_negatives += 1
             for field in field_scores:
                 field_scores[field][0] += 1
                 field_scores[field][1] += 1
-        elif truth is not None and pred_tasks and parse_ok:
+        elif truth is None and pred_tasks:
+            false_positives += 1
+        elif truth is not None and not pred_tasks:
+            false_negatives += 1
+        else:
             pred = pred_tasks[0]
-            valid += 1
             for field in field_scores:
                 field_scores[field][1] += 1
                 if getattr(pred, field) == getattr(truth, field):
                     field_scores[field][0] += 1
-        else:
-            invalid += 1
+            task_correct += 1
 
     latencies.sort()
 
@@ -90,10 +95,16 @@ def run_path(test_path: Path, path_name: str) -> dict:
         field: round(hits / total, 4) if total else None
         for field, (hits, total) in field_scores.items()
     }
+    task_rows = sum(1 for row in rows if row["tasks"])
     return {
         "path": path_name,
         "n": len(rows),
-        "parse_errors": invalid,
+        "task_rows_truth": task_rows,
+        "parse_errors": parse_errors,
+        "true_negatives": true_negatives,
+        "false_positives": false_positives,
+        "false_negatives": false_negatives,
+        "task_field_correct": task_correct,
         "accuracy": accuracy,
         "latency_p50_s": pct(0.50),
         "latency_p95_s": pct(0.95),
