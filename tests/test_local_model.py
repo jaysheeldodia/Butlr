@@ -53,6 +53,9 @@ def test_local_provider_posts_to_local_url(monkeypatch):
     captured = {}
 
     class FakeResponse:
+        status_code = 200
+        text = ""
+
         def raise_for_status(self):
             return None
 
@@ -79,6 +82,9 @@ def test_local_provider_sends_bearer_and_extra_body(monkeypatch):
     captured = {}
 
     class FakeResponse:
+        status_code = 200
+        text = ""
+
         def raise_for_status(self):
             return None
 
@@ -109,6 +115,9 @@ def test_local_provider_omits_bearer_when_no_key(monkeypatch):
     captured = {}
 
     class FakeResponse:
+        status_code = 200
+        text = ""
+
         def raise_for_status(self):
             return None
 
