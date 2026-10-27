@@ -221,3 +221,8 @@ marimo/_lsp/
 __marimo__/
 .vscode/
 .cursor/
+
+# Private analysis logs — inbox profile (sender domains, volumes, timeline).
+# Local only; never commit to the public repo.
+analysis.md
+decisions.md
