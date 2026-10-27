@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from models.schemas import Email, ExtractedTask
 from utils.llm_client import chat, parse_json_response
+from utils.text_clean import clean_body_full
 from utils.logger import logger
 
 # Single source of truth for the extraction prompt. Training data, the label
@@ -41,11 +42,16 @@ Rules:
 
 
 def extract_tasks(email: Email, context: str = "") -> list[ExtractedTask]:
+    # Send the SAME cleaned text the labeler and the training rows used
+    # (utils.text_clean), so serving matches training: HTML/CSS/quoted replies
+    # are stripped before the model sees the body. Without this the fine-tuned
+    # model is asked to read raw markup it never saw during fine-tuning.
+    body = clean_body_full(email.body)
     user_prompt = (
         f"Email ID: {email.id}\n"
         f"Subject: {email.subject}\n"
         f"Sender: {email.sender}\n"
-        f"Body: {email.body}\n"
+        f"Body: {body}\n"
         f"Timestamp: {email.timestamp}\n"
         f"Context:\n{context or 'No additional context.'}"
     )
