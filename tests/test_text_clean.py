@@ -194,3 +194,33 @@ def test_prep_corpus_drops_identical_content_rows(tmp_path, monkeypatch):
     assert len(pool) == 2
     assert "a1" in ids and "a3" in ids  # first copy kept, duplicate dropped
     assert "a2" not in ids
+
+
+# ── newsletter/mail footers: survive cleaning, so the prompt must handle them ─
+
+def test_footer_text_survives_cleaning():
+    """Documents WHY the labeler prompt needs an explicit footer rule.
+
+    clean_body strips quoted lines, HTML/CSS and long blobs, but a plain-text
+    footer is ordinary prose, so it survives. Every GitHub notification
+    therefore reaches the labeler containing "Reply to this email directly".
+    """
+    body = (
+        "<div><p>Your workflow run failed.</p>"
+        "<p>Reply to this email directly, view it on GitHub, or unsubscribe.</p>"
+        "</div>"
+    )
+    cleaned = clean_body_full(body)
+    assert "workflow run failed" in cleaned
+    assert "Reply to this email directly" in cleaned
+
+
+def test_labeler_prompt_treats_footers_as_noise():
+    from scripts.label_runner import LABELER_SYSTEM_PROMPT as prompt
+
+    assert "Reply to this email directly" in prompt
+    assert "NOT a request to reply" in prompt
+    assert "unsubscribe" in prompt.lower()
+    # the old prompt claimed links were removed; cleaning keeps short URLs,
+    # so telling the model otherwise is false.
+    assert "links were removed" not in prompt

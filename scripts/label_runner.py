@@ -62,9 +62,17 @@ reply, apply, submit, schedule, prepare, review, confirm, decide, or follow
 up. Emails that merely inform, announce, confirm an automatic event, market
 a product, or contain content to read are NEVER tasks.
 
-The body may be cleaned: HTML, CSS, quoted replies, and links were removed.
-If the body is empty or unreadable (for example only CSS/HTML markup
-survived), return [] — do NOT invent tasks from markup.
+The body may be cleaned: HTML/CSS markup and quoted reply text were removed.
+URLs, unsubscribe lines and mail footers may still be present. If the body is
+empty or unreadable (for example only CSS/HTML markup survived), return [] —
+do NOT invent tasks from markup.
+
+EVERY mailing system appends the same footer: "Reply to this email directly",
+"View it on GitHub", "Unsubscribe", "You are receiving this because",
+"Manage notifications". Footer text is the mailing system talking, not a
+person writing to the user. In particular, the phrase "Reply to this email
+directly" is NOT a request to reply. Never create a task from footer,
+unsubscribe, or "view in your browser" text.
 
 Typical NOISE (return []):
 - Job alerts and recommendations ("new jobs near you", "you may like this
@@ -72,6 +80,8 @@ Typical NOISE (return []):
 - LinkedIn updates, connection invites, group digests.
 - GitHub noise: comments, reactions, review-thread replies, workflow-run and
   Dependabot notifications.
+- Automated mail whose only "action" sits in a footer: unsubscribe links,
+  "view it in your browser", "manage notification settings".
 - Newsletters, digests, product updates, promotions.
 - Receipts, payment confirmations, security codes, USCIS status updates
   that require nothing from the user.
@@ -159,6 +169,31 @@ def label_one(row: dict, *, max_body_chars: int = 4000) -> tuple[list[dict], flo
     return tasks, latency, row
 
 
+def preflight(url: str, timeout: float = 5.0) -> tuple[bool, str]:
+    """Check the local LLM endpoint answers BEFORE labeling starts.
+
+    Failure mode this prevents: with no llama-server running, llm_client raises
+    ConnectError on every single row, so the run prints one full traceback per
+    email and writes an empty output file. That looks like a code bug but is
+    really "no model server". One cheap probe turns it into a single message.
+
+    Reachable = we got an HTTP response at all (even 503 "still loading the
+    model" means the server is there). Unreachable = a connection error.
+    """
+    import httpx
+
+    base = url.split("/v1/")[0].rstrip("/")
+    detail = "no probe attempted"
+    for probe in (f"{base}/health", f"{base}/v1/models"):
+        try:
+            response = httpx.get(probe, timeout=timeout)
+        except Exception as exc:  # ConnectError, timeouts, DNS, ...
+            detail = f"{probe} -> {type(exc).__name__}: {exc}"
+            continue
+        return True, f"{probe} -> HTTP {response.status_code}"
+    return False, detail
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", default="data/corpus/pool.jsonl")
@@ -177,6 +212,16 @@ def main() -> None:
     out_path = REPO_ROOT / args.output
     log_path = REPO_ROOT / args.log
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not in_path.exists():
+        print(
+            f"ERROR: no such input file: {in_path}\n"
+            "\nThe pool is built from your exported mail and lives only on your\n"
+            "machine (data/ is gitignored). If you are in a fresh clone, copy\n"
+            "data/ from your older clone, or re-export:\n"
+            "  python -m scripts.export_emails && python -m scripts.prep_corpus"
+        )
+        sys.exit(1)
 
     rows = [json.loads(line) for line in in_path.read_text().splitlines() if line.strip()]
     done_ids: set[str] = set()
@@ -204,6 +249,24 @@ def main() -> None:
         )
         return
     print(f"Labeling {len(pending)} rows against {settings.LOCAL_LLM_URL}")
+
+    reachable, detail = preflight(settings.LOCAL_LLM_URL)
+    if not reachable:
+        print(
+            f"\nERROR: the local LLM endpoint is NOT reachable.\n"
+            f"  URL:    {settings.LOCAL_LLM_URL}\n"
+            f"  detail: {detail}\n\n"
+            "The labeler does not load a model itself - it calls a running\n"
+            "llama-server. Start the server FIRST, then re-run this command.\n\n"
+            "  llama-server -m /path/to/Qwen3-4B-Q4_K_M.gguf \\\n"
+            "      --port 8080 --ctx-size 4096 --no-webui --reasoning off\n\n"
+            "  Check your build's flag:  llama-server --help | grep -i reasoning\n"
+            "  Verify it is up:          curl -s http://127.0.0.1:8080/health\n\n"
+            "Nothing was labeled and nothing was lost: failed rows are never\n"
+            "written to the output file, so they stay pending. Just re-run."
+        )
+        sys.exit(1)
+    print(f"endpoint OK: {detail}")
 
     ok = failed = 0
     total_latency = 0.0
