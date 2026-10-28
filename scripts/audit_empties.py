@@ -11,6 +11,7 @@ Each verdict is saved immediately to data/labeled/audit_empties.jsonl
 
 Usage:
     python3 scripts/audit_empties.py data [--limit 50] [--seed 42]
+    python3 scripts/audit_empties.py data --labeled data/labeled/weak_v2.jsonl
 
 Paste back only the SUMMARY block, never row content.
 """
@@ -147,24 +148,75 @@ def is_html_heavy(body: str) -> bool:
     return bool(re.search(r"<style|@media|class=", low)) or "@media only screen" in low
 
 
+def select_labeler_empties(rows: list[dict], backups: list[dict]) -> list[dict]:
+    """Rows to audit: those the LABELER said had no tasks.
+
+    Two cases, and getting this wrong audits the wrong rows:
+
+    - A CORRECTED file (v1 weak.jsonl) holds Jay's hand edits, so its own
+      "empty" rows are partly human decisions. The pre-correction .bak is what
+      the labeler actually said, so that is the truth to audit against.
+    - A FRESH v2 file has no .bak at all. There the file's own empty rows ARE
+      the labeler's empties. Falling back to the .bak logic here would mark
+      EVERY row as labeler-empty (missing id -> default True), so the sample
+      would include rows the v2 labeler positively labeled as tasks.
+    """
+    if backups:
+        backup_empty = {r["email"]["id"]: not r.get("tasks") for r in backups}
+        return [r for r in rows if backup_empty.get(r["email"]["id"], True)]
+    return [r for r in rows if not r.get("tasks")]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("data", nargs="?", default="data")
     ap.add_argument("--limit", type=int, default=50)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument(
+        "--labeled",
+        default=None,
+        help="labeled JSONL to audit (default: <data>/labeled/weak.jsonl). "
+        "Point this at weak_v2.jsonl after a v2 re-label.",
+    )
+    ap.add_argument(
+        "--verdicts",
+        default=None,
+        help="where verdicts are saved. Default audit_empties.jsonl, or "
+        "audit_<labeled-stem>.jsonl when --labeled is given.",
+    )
     args = ap.parse_args()
 
     data = Path(args.data)
-    labeled = data / "labeled" / "weak.jsonl"
+    labeled = Path(args.labeled) if args.labeled else data / "labeled" / "weak.jsonl"
     bak = labeled.with_suffix(".jsonl.bak")
-    audit_path = data / "labeled" / "audit_empties.jsonl"
+    if args.verdicts:
+        audit_path = Path(args.verdicts)
+    elif args.labeled:
+        # Separate verdict file per labeled file: verdicts resume by email_id,
+        # so sharing one file across v1 and v2 would skip every already-judged
+        # id and silently reuse the old verdicts.
+        audit_path = labeled.with_name(f"audit_{labeled.stem}.jsonl")
+    else:
+        audit_path = data / "labeled" / "audit_empties.jsonl"
 
+    print(f"auditing: {labeled}")
+    print(f"verdicts: {audit_path}")
+    if not labeled.exists():
+        print(f"\nERROR: no such file: {labeled}")
+        available = sorted(p.name for p in labeled.parent.glob("*.jsonl")) if labeled.parent.exists() else []
+        if available:
+            print(f"Files present in {labeled.parent}:")
+            for name in available:
+                print(f"  {name}")
+        else:
+            print(f"(no .jsonl files in {labeled.parent})")
+        print("\nCheck --labeled, or whether scripts.label_runner has been run yet.")
+        sys.exit(1)
     rows = load(labeled)
     backups = load(bak) if bak.exists() else []
     by_id = {r["email"]["id"]: r for r in rows}
-    backup_empty = {r["email"]["id"]: not r.get("tasks") for r in backups}
 
-    labeler_empty = [r for r in rows if backup_empty.get(r["email"]["id"], True)]
+    labeler_empty = select_labeler_empties(rows, backups)
     print(f"rows the labeler called 'empty' (never shown to you): {len(labeler_empty)}")
 
     # ---- Part A: GitHub sub-sender breakdown (counts only) ----
