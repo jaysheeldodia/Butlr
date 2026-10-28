@@ -10,7 +10,7 @@ from agents.supervisor import run_pipeline
 from api import token_store
 from config import settings
 from memory.vector_store import VectorStore
-from models.schemas import PipelineResult
+from schemas import PipelineResult
 from tools.calendar import CalendarTool
 from tools.gmail import GmailTool
 from utils.logger import logger

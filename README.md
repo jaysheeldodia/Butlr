@@ -24,12 +24,13 @@ Butlr/
 ├── config/                Environment-driven application settings
 ├── frontend/              Static dashboard assets served by FastAPI
 ├── memory/                Embeddings and FAISS-backed vector storage
-├── models/                Shared Pydantic schemas
+├── models/                Local GGUF model weights (git-ignored)
 ├── scripts/               Local development and token bootstrap helpers
 ├── tools/                 Gmail and Calendar API integrations
 ├── utils/                 Logging and LLM provider client logic
 ├── workers/               Background polling and processing service
-└── tests/                 Automated test coverage
+├── tests/                 Automated test coverage
+└── schemas.py             Shared Pydantic schemas
 ```
 
 ## Requirements

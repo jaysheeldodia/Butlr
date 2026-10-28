@@ -75,7 +75,7 @@ benchmarked by us).
 
 ## 4. Schema change
 
-models/schemas.py, ExtractedTask: add
+schemas.py, ExtractedTask: add
 
     category: Literal["reply", "application", "interview", "admin", "other"]
 
@@ -222,7 +222,7 @@ Phase P4 - serving and benchmark (Jay runs manually):
 2. Labeler model? Qwen3-8B (Jay's choice). RAM free ~6 GB: close apps before
    the label run; fallback quant Q3_K_M if it swaps.
 3. Category enum? reply / application / interview / admin / other (agent
-   decision, confirmed). Implemented in models/schemas.py.
+   decision, confirmed). Implemented in schemas.py.
 4. Colab fallback with anonymized data? Accepted. Upload mechanics below.
 
 ## 9a. Colab upload mechanics (fallback path only)

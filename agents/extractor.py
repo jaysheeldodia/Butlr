@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from models.schemas import Email, ExtractedTask
+from schemas import Email, ExtractedTask
 from utils.llm_client import chat, parse_json_response
 from utils.text_clean import clean_body_full
 from utils.logger import logger

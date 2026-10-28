@@ -222,9 +222,6 @@ results/
 .butlr_data/
 
 # Model weights — never commit. GB-scale binaries, and this repo is public.
-# By extension, NOT by directory: models/ holds tracked Python source
-# (models/schemas.py), so ignoring the directory would silently drop any new
-# module added there.
 *.gguf
 *.ggml
 *.safetensors

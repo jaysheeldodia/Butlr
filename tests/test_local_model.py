@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from models.schemas import Email, ExtractedTask
+from schemas import Email, ExtractedTask
 
 
 def _make_email(id: str = "e1") -> Email:

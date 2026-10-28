@@ -8,7 +8,7 @@ from agents.drafter import generate_draft
 from agents.extractor import extract_tasks
 from agents.rag import retrieve_context
 from memory.vector_store import VectorStore
-from models.schemas import CalendarEvent, DraftResponse, Email, ExtractedTask, PipelineResult
+from schemas import CalendarEvent, DraftResponse, Email, ExtractedTask, PipelineResult
 from utils.logger import logger
 
 

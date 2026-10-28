@@ -7,7 +7,7 @@ import requests
 
 from api import token_store
 from config import settings
-from models.schemas import CalendarEvent
+from schemas import CalendarEvent
 from tools.base import BaseTool
 from utils.logger import logger
 

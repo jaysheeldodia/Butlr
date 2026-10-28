@@ -184,7 +184,7 @@
    -->
   <rect x="332" y="690" width="240" height="58" rx="8" fill="#052e16" stroke="#16a34a" stroke-width="1.5"/>
   <text x="452" y="715" text-anchor="middle" fill="#86efac" font-size="13" font-weight="600">PipelineResult</text>
-  <text x="452" y="733" text-anchor="middle" fill="#4ade80" font-size="9">models/schemas.py  .  tasks[] + drafts{}</text>
+  <text x="452" y="733" text-anchor="middle" fill="#4ade80" font-size="9">schemas.py  .  tasks[] + drafts{}</text>
 
   <!-- Supervisor -> PipelineResult (left side route) -->
   <path d="M295,328 L220,328 L220,675 L332,675 L332,690" fill="none" stroke="#a855f7" stroke-width="1.5" marker-end="url(#a-purple)"/>

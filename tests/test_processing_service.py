@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from models.schemas import CalendarEvent, Email, ExtractedTask, PipelineResult
+from schemas import CalendarEvent, Email, ExtractedTask, PipelineResult
 
 
 # ── Fixtures ───────────────────────────────────────────────────────────────────

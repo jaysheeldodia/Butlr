@@ -10,7 +10,7 @@ import requests
 
 from api import token_store
 from config import settings
-from models.schemas import Email
+from schemas import Email
 from tools.base import BaseTool
 
 GMAIL_TOKEN_URL = "https://oauth2.googleapis.com/token"

@@ -23,7 +23,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from models.schemas import Email, ExtractedTask  # noqa: E402
+from schemas import Email, ExtractedTask  # noqa: E402
 from utils.llm_client import chat, parse_json_response  # noqa: E402
 
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import sys
 
-from models.schemas import Email
+from schemas import Email
 from utils.text_clean import clean_body_full
 
 # ~5000 chars of CSS, the way a truncated MINIFIED email body looked: the wall

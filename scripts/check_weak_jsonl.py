@@ -53,7 +53,7 @@ def inspect(data_dir: Path) -> None:
     try:
         sys.path.insert(0, str(Path.cwd()))
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-        from models.schemas import ExtractedTask
+        from schemas import ExtractedTask
 
         bad = 0
         for r in rows:

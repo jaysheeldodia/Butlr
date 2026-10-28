@@ -28,7 +28,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from config import settings  # noqa: E402
-from models.schemas import Email  # noqa: E402
+from schemas import Email  # noqa: E402
 import utils.llm_client as llm_client  # noqa: E402
 from utils.llm_client import chat, parse_json_response  # noqa: E402
 from utils.text_clean import clean_body_full  # noqa: E402

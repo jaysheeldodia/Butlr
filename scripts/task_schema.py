@@ -1,4 +1,4 @@
-"""Task-extraction JSON schema, derived from models.ExtractedTask.
+"""Task-extraction JSON schema, derived from schemas.ExtractedTask.
 
 Used by llama-server (--json-schema-file) to constrain local model output to
 valid JSON. Jay reviews and edits this file by hand if the schema changes.

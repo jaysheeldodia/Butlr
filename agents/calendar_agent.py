@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from models.schemas import CalendarEvent, ExtractedTask
+from schemas import CalendarEvent, ExtractedTask
 from utils.llm_client import chat, parse_json_response
 from utils.logger import logger
 

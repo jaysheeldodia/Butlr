@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from models.schemas import DraftResponse, Email
+from schemas import DraftResponse, Email
 from utils.llm_client import chat, parse_json_response
 from utils.logger import logger
 
