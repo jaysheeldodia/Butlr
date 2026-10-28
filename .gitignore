@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# remove the models folder
+models/
+
+# remove the temp files
+temp*
+
 # Distribution / packaging
 .Python
 build/
